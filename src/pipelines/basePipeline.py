@@ -17,9 +17,12 @@ class BasePipeline(object):
         self.RUN_ORDER = [] # ordered list of functions to run
     
     def run(self,startPoint=0):
-        '''Run RUN_ORDER functions from startPoint'''
+        '''Run RUN_ORDER functions from startPoint. Returns True if all functions
+            ran and completed successfully.'''
+        success = True
         for i in range(startPoint,len(self.RUN_ORDER)):
-            self.RUN_ORDER[i]()
+            success = success and self.RUN_ORDER[i]()
+        return success
             
 if __name__ == "__main__":
     pass

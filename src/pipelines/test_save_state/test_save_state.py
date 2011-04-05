@@ -7,8 +7,8 @@ class test_save_state(BasePipeline):
     
     def __init__(self):
         self.RUN_ORDER = [RunOrderFunction(self.stage1),
-                 RunOrderFunction(self.stage2,"arg1","arg2",keywarg="this is the kwarg"),
-                 RunOrderFunction(self.stage3)]
+                          RunOrderFunction(self.stage2,"arg1","arg2",keywarg="this is the kwarg"),
+                          RunOrderFunction(self.stage3)]
     
     #def run(self):
     #    print("Pipeline '" + self.SHELL_SCRIPT + "' starting..."),
@@ -32,12 +32,15 @@ class test_save_state(BasePipeline):
         
     def stage1(self):
         print("stage 1: doing stage 1 stuff")
+        return True
     
     def stage2(self,haz,args,keywarg="I'm a keyword arg"):
         print("stage 2: '" + haz + "' '" + args + "' '" + keywarg + "'")
+        return True
     
     def stage3(self):
         print("stage 3: doing stage 3 stuff")
+        return True
     
 if __name__ == "__main__":
     pass

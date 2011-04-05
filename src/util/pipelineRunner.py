@@ -1,25 +1,25 @@
-import sys
+import sys,os
 
 class PipelineRunner(object):
     
-    def __init__(self,path,name):
+    def __init__(self,path):
         '''Handles running pipelines
             Inputs: 
-                path = path to python script
-                name = name of the BasePipeline class to run'''
-        self.path = path
-        self.name = name
+                path = path to python pipeline script'''
+        psplit = os.path.split(path)
+        self.path = psplit[0]
+        self.name = psplit[1].replace(".py","")
     
     def loadPipeline(self):
+        '''Load the pipeline'''
         sys.path.append(self.path)
         return __import__(self.name)
     
     def runPipeline(self,startPoint=0):
+        '''Run the pipeline. Returns True if pipeline completed successfully.'''
         module = self.loadPipeline()
         pipeline = module.__getattribute__(self.name)()
-        pipeline.run(startPoint) 
+        return pipeline.run(startPoint) 
     
 if __name__ == "__main__":
-    #a = PipelineRunner("../pipelines/test_save_state/","test_save_state")
-    #a.runPipeline()
     pass
