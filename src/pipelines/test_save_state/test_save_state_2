@@ -1,0 +1,8 @@
+#! /bin/bash
+
+file_out = output/test_save_state_output
+
+echo "this is stage 2" >> $file_out
+for((i=10;i<20;i++)); do
+	echo $i >> $file_out
+done

@@ -1,20 +1,26 @@
 import sys
 
 from util.uploader import AccessGrant,Uploader
+from util.environment import *
+
+CONFIG_FILE = "../config"
 
 def printUsage():
-    print("")
-    print("VERTEX PIPELINE UTILITY")
-    print("    Commands to use and manipulate pipelines.")
-    print("USAGE")
-    print("    pipeline <pipeline_name> <data_file_location>")
-    print("        <pipeline_name> = name of pipeline to execute")
-    print("        <data_file_location> = url or absolute path of data file")
-    print("")
+    readme = open("../README","r")
+    print(readme.read())
+    readme.close()
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
+    arglen = len(sys.argv)
+    if arglen < 2:
         printUsage()
+    elif sys.argv[1] == "set":
+        if arglen < 4:
+            printUsage()
+        else:
+            if not envSet(CONFIG_FILE,sys.argv[2],sys.argv[3]):
+                print("variable '" + sys.argv[2] + "' not found")
+            else:
+                print("variable '" + sys.argv[2] + "' set to '" + sys.argv[3] + "'")
     else:
-        pass
-        
+        printUsage()

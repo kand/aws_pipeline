@@ -1,0 +1,9 @@
+
+VERTEX PIPELINE UTILITY
+
+NAME
+    pipeline - commands to use and manipulate vertex pipelines
+    
+SYNOPSIS
+    python2.7 pipeline.py set <ACCESS_KEY | SECRET_KEY> <value>
+        Set the value of an environment variable

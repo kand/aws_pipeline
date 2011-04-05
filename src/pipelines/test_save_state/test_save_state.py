@@ -1,8 +1,9 @@
-import subprocess
+import subprocess,sys
 
+sys.path.append("/media/files/docs/research/pipeline/src/pipelines/")
 from basePipeline import RunOrderFunction,BasePipeline
 
-class TestSaveState(BasePipeline):
+class test_save_state(BasePipeline):
     
     def __init__(self):
         self.RUN_ORDER = [RunOrderFunction(self.stage1),
@@ -26,18 +27,17 @@ class TestSaveState(BasePipeline):
     #        
     #        if pout == "save_state()":
     #            process.communicate("continue")
-     #       
-     #   print("Complete.")
+    #       
+    #   print("Complete.")
         
     def stage1(self):
-        pass
+        print("stage 1: doing stage 1 stuff")
     
     def stage2(self,haz,args,keywarg="I'm a keyword arg"):
-        print("'" + haz + "' '" + args + "' '" + keywarg + "'")
-        pass
+        print("stage 2: '" + haz + "' '" + args + "' '" + keywarg + "'")
     
     def stage3(self):
-        pass
+        print("stage 3: doing stage 3 stuff")
     
 if __name__ == "__main__":
-    TestSaveState().run()
+    pass
