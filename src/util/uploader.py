@@ -33,7 +33,7 @@ class Uploader(object):
         '''Download a file from url, upload it to an s3 bucket.
             
             Inputs:
-                url = url of file to download, or absolute path to local flie
+                url = url of file to upload, or absolute path to local flie
                 bucketName = name of bucket to create/put file on, will be made
                     lower case and prefixed with '<access_key>_'
                 s3FileName = name of file, will be made lower case
@@ -45,6 +45,8 @@ class Uploader(object):
                     this to set Content-Type
                 
             Returns: returns the url of the file on s3'''
+        
+        #TODO : make more robust???
         
         file = self.parseUrl(url) 
         bucket = self.getBucket(bucketName)
@@ -95,6 +97,7 @@ class Uploader(object):
             raise Exception("key '" + keyName + "' does not exist")
         return k
     
+    # TODO : this doesn't work...
     def setMetadata(self,key,metadata={}):
         '''Set metadata for a key.
             
@@ -104,6 +107,7 @@ class Uploader(object):
                     the key'''
         for k in metadata:
             key.set_metadata(k,metadata[k])
+            print("set metadata of file '" + k + "' = '" + metadata[k] + "'")
 
     def changeAccess(self,key,accessGrants=None):
         '''Change access to a file on s3.

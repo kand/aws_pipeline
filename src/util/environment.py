@@ -1,36 +1,41 @@
 import re
 
-def envSet(configFile,name,value):
-    '''Find and set an environment variable in config file
-        Inputs:
-            configFile = path to configuration file
-            name = name of a variable to change
-            value = value of a variable to change
-        Returns: True if variable successfully changed'''
-    replaced = False
+class _Environment(object):
+    '''Class that stores/loads/saves environment variables in the config file.'''
     
-    def _valRep(match):
-        return match.group(1) + "=" + value + "\n"
+    def __init__(self):
+        self.vars = {}
+        
+    def load(self,fileName):
+        '''Load environment variables from specified config file.'''
+        
+        self.configFile = fileName
+        
+        f = open(fileName,"r")
+        matches = re.finditer(r"(?P<key>\w+)=(?P<val>.+)\n",f.read())
+        f.close()
+        
+        for m in matches:
+            self.vars[m.group("key")] = m.group("val")
+            
+    def set(self,name,value):
+        '''Set the value of an environment variable.'''
+        if name not in self.vars:
+            return False
+        self.vars[name] = value
+        return True
+            
+    def get(self,name):
+        '''Get the value of an environment variable.'''
+        return self.vars[name]
     
-    f = open(configFile,"r")
-    oldf = f.read()
-    newf = re.sub(r"(" + name + r")=(.*)\n",_valRep,oldf)
-    if oldf is not newf: replaced = True 
-    f.close()
-    f = open(configFile,"w")
-    f.write(newf)
-    f.close()
-    
-    return replaced
+    def save(self):
+        '''Save environment variables to config file.'''
+        f = open(self.configFile,"w")
+        for k in self.vars:
+            f.write(k + "=" + self.vars[k] + "\n")
+        f.close()
 
-def envGet(configFile,name):
-    '''Find an environment variable in config file
-        Inputs:
-            configFile = path to configuration file
-            name = name of variable to get'''        
-    f = open(configFile,"r")
-    match = re.search(r"(" + name + r")=(.*)\n",f.read())
-    f.close()
-    if match is not None:
-        return match.group(2)
-    return None
+_environment = _Environment()
+
+def Environment(): return _environment
