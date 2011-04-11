@@ -86,8 +86,8 @@ class Uploader(object):
                 
             Returns: a boto key object'''
         k = bucketObj.new_key(fileName)
-        k.set_contents_from_file(fStream)
         self.setMetadata(k,metadata)
+        k.set_contents_from_file(fStream)
         return k
     
     def getKey(self,bucketObj,keyName):
@@ -107,6 +107,7 @@ class Uploader(object):
                     the key'''
         for k in metadata:
             key.set_metadata(k,metadata[k])
+            # TODO : this doesn't work if key is already created
             print("set metadata of file '" + k + "' = '" + metadata[k] + "'")
 
     def changeAccess(self,key,accessGrants=None):

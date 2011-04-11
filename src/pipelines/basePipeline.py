@@ -37,7 +37,7 @@ class BasePipeline(object):
         self.uploader = None    # file uploader
         self.bucketName = ""    # name of s3 bucket
         self.accessGrants = []  # access grant list for output
-        self.metadata = {}      # TODO : need to figure this out still
+        self.metadata = {"Content-Type":"text/html"}      # TODO : need to figure this out still
     
     def construct(self):
         '''Construct pipeline parameters based on set variables. Called before
