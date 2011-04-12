@@ -19,6 +19,10 @@ class test_save_state(BasePipeline):
         self.dir = os.path.split(os.path.abspath(__file__))[0]
         self.name = "test_save_state"
         
+    def handleOutput(self,pout,perr):
+        print("[OUT]" + pout)
+        print("[ERR]" + perr)
+        
     def stage1(self):
         print("stage 1: doing stage 1 stuff")
         self.execScript(os.path.join(self.dir,"test_save_state_1"))

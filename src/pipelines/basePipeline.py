@@ -37,7 +37,7 @@ class BasePipeline(object):
         self.uploader = None    # file uploader
         self.bucketName = ""    # name of s3 bucket
         self.accessGrants = []  # access grant list for output
-        self.metadata = {"Content-Type":"text/html"}      # TODO : need to figure this out still
+        self.metadata = {}
     
     def construct(self):
         '''Construct pipeline parameters based on set variables. Called before
@@ -72,6 +72,16 @@ class BasePipeline(object):
         
         self.save(self.logPath)
     
+    #TODO : add a custom output processing function to execScript so pipelines
+    #     can do custom output processing
+    
+    def handleOutput(self,pout,perr):
+        '''Overriadable function to handle shell script output.
+            Inputs:
+                pout = proccess out stream
+                perr = process error stream'''
+        pass
+    
     def execScript(self,script,*args):
         '''Run a shell script and log its output to self.log
             Inputs:
@@ -81,6 +91,7 @@ class BasePipeline(object):
         process = subprocess.Popen(command,stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
         pout,perr = process.communicate()
+        
         self.logFile.write(perr)
         self.logFile.write(pout)
 
@@ -90,6 +101,9 @@ class BasePipeline(object):
         process = subprocess.Popen(command,stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
         pout,perr = process.communicate()
+        
+        self.handleOutput(pout,perr)
+        
         self.logFile.write(perr)
         self.logFile.write(pout)
         
