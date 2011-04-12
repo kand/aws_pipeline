@@ -32,10 +32,15 @@ if __name__ == "__main__":
         print("Running pipeline...")
         print("")
         pipe = PipelineRunner(sys.argv[2])
-        if arglen == 4:
-            pipe.runPipeline(int(sys.argv[3]))
+        addArgs = []
+        if arglen >= 4:
+            for i in range(4,len(sys.argv)):
+                addArgs.append(sys.argv[i])
+            pipe.runPipeline(int(sys.argv[3]),addArgs=addArgs)
         else:
-            pipe.runPipeline()
+            for i in range(3,len(sys.argv)):
+                addArgs.append(sys.argv[i])
+            pipe.runPipeline(addArgs=addArgs)
         print("Pipeline complete.")
     else:
         printUsage()

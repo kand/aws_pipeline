@@ -24,7 +24,7 @@ class RunOrderFunction():
 class BasePipeline(object):
     '''Base for all other python pipeline scripts.'''
     
-    def __init__(self):
+    def __init__(self,addArgs=[]):
         self.RUN_ORDER = []     # ordered list of functions to run
         
         self.outputDir = ""     # pipeline output directory
@@ -72,14 +72,15 @@ class BasePipeline(object):
         
         self.save(self.logPath)
     
-    #TODO : add a custom output processing function to execScript so pipelines
-    #     can do custom output processing
-    
     def handleOutput(self,pout,perr):
         '''Overriadable function to handle shell script output.
             Inputs:
                 pout = proccess out stream
                 perr = process error stream'''
+        pass
+    
+    # TODO : add execute command function
+    def execComm(self,commStr):
         pass
     
     def execScript(self,script,*args):
