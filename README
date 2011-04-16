@@ -5,8 +5,8 @@ NAME
     pipeline - commands to use and manipulate vertex pipelines
     
 SYNOPSIS
-    python2.7 pipeline.py set|get ACCESS_KEY|SECRET_KEY value
+    python2.7 pipeline.py set|get ACCESS_KEY|SECRET_KEY <value>
         Set/get the value of an environment variable.
         
-    python2.7 pipeline.py run path [start]
-        Run pipeline script located at path. The start option is an integer that sets the start point of the pipeline.
+    python2.7 pipeline.py run <path> [-s <start>] [<arg 1>,<arg 2>,...]
+        Run pipeline script located at path. The start option is an integer that sets the start point of the pipeline. Arg is an argument that will be passed to script.

@@ -33,10 +33,10 @@ if __name__ == "__main__":
         print("")
         pipe = PipelineRunner(sys.argv[2])
         addArgs = []
-        if arglen >= 4:
-            for i in range(4,len(sys.argv)):
+        if arglen >= 5 and sys.argv[3] == "-s":
+            for i in range(5,len(sys.argv)):
                 addArgs.append(sys.argv[i])
-            pipe.runPipeline(int(sys.argv[3]),addArgs=addArgs)
+            pipe.runPipeline(int(sys.argv[4]),addArgs=addArgs)
         else:
             for i in range(3,len(sys.argv)):
                 addArgs.append(sys.argv[i])

@@ -10,6 +10,9 @@ class test_save_state(BasePipeline):
     def __init__(self,addArgs=[]):
         BasePipeline.__init__(self)
         
+        for i in range(0,len(addArgs)):
+            print("Got arg: " + addArgs[i])
+        
         self.RUN_ORDER = [RunOrderFunction(self.stage1),
                           RunOrderFunction(self.stage2,50),
                           RunOrderFunction(self.stage3)]
@@ -18,8 +21,8 @@ class test_save_state(BasePipeline):
         self.name = "test_save_state"
         
     def handleOutput(self,pout,perr):
-        print("[OUT]" + pout)
-        print("[ERR]" + perr)
+        if len(pout) > 0: print("[OUT]" + pout)
+        if len(perr) > 0: print("[ERR]" + perr)
         
     def stage1(self):
         print("stage 1: doing stage 1 stuff")
