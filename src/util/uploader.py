@@ -124,14 +124,14 @@ class Uploader(object):
         if isinstance(accessGrants,list):
             if len(accessGrants) == 0:
                 key.set_acl('public-read')
-                print("File set to be publicly read")
+                #print("File set to be publicly read")
             else:
                 for g in accessGrants:
                     key.add_email_grant(g.access,g.email)
-                    print("user '" + g.email + "' granted permission '" + g.access + "'")
+                    #print("user '" + g.email + "' granted permission '" + g.access + "'")
         else:
             key.set_acl('private')
-            print("File set to private")
+            #print("File set to private")
         return key
     
     def parseUrl(self,url):

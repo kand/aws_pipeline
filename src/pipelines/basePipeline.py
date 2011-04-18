@@ -79,38 +79,36 @@ class BasePipeline(object):
                 perr = process error stream'''
         pass
     
-    # TODO : add execute command function
-    def execComm(self,commStr):
-        pass
+    def execComm(self,commStr,handleOutFunc=None):
+        '''Run a command line command and log its output to self.log
+            Inputs:
+                commStr = command exactly as you would enter it from 
+                    command line
+                handleOutFunc = function to be called to handle any output from
+                    process, this function must take 2 inputs (outstring,errorstring)'''           
+        command = commStr.split(" ")
+        process = subprocess.Popen(command,stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
+        pout,perr = process.communicate()
+        
+        if handleOutFunc is not None:
+            handleOutFunc(pout,perr)
+        
+        self.logFile.write(perr)
+        self.logFile.write(pout)
     
     def execScript(self,script,*args):
         '''Run a shell script and log its output to self.log
             Inputs:
                 script = absolute path to script
                 args = command line arguments to give script'''
-        command = ["chmod","+x",script]
-        process = subprocess.Popen(command,stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE)
-        pout,perr = process.communicate()
         
-        self.logFile.write(perr)
-        self.logFile.write(pout)
-
-        command = ["sudo",script]
-        for a in args:
-            command.append(str(a))
-        process = subprocess.Popen(command,stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE)
-        pout,perr = process.communicate()
-        
-        self.handleOutput(pout,perr)
-        
-        self.logFile.write(perr)
-        self.logFile.write(pout)
+        self.execComm("chmod +x %s" % script)    
+        self.execComm("sudo %s %s" % (script," ".join(str(a) for a in args)),self.handleOutput)
         
     def save(self,path):
         '''Saves file to s3.'''
-        print("File saved on s3 at: " + 
+        print("File at: " + 
               self.uploader.upload(path,self.bucketName,os.path.split(path)[1],
                                    self.accessGrants,self.metadata))
 
