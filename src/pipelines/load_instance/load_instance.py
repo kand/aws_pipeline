@@ -5,7 +5,8 @@ from fabric.api import run,sudo,settings,env
 
 #import ssh_tools
 
-sys.path.append("/media/files/docs/research/pipeline/src")
+THIS_DIR = os.path.split(os.path.abspath(__file__))[0]
+sys.path.append(os.path.join(THIS_DIR,"../.."))
 from pipelines.basePipeline import RunOrderFunction,BasePipeline
 from util.environment import Environment
 
@@ -72,7 +73,7 @@ class load_instance(BasePipeline):
             run("echo -e 'ACCESS_KEY=%s\nSECRET_KEY=%s\n' > aws_pipeline/config" 
                 % (Environment().get("ACCESS_KEY"),
                    Environment().get("SECRET_KEY")))
-            run("python2.6 aws_pipeline/src/pipeline.py run pipelines/test_save_state/test_save_state.py")
+            run("python2.6 aws_pipeline/src/pipeline.py run aws_pipeline/src/pipelines/test_save_state/test_save_state.py")
     
     def loadPipeline(self):
         '''Get and prepare pipeline'''
