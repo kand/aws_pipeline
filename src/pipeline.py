@@ -1,10 +1,10 @@
-import sys
+import os,sys
 
 from util.uploader import AccessGrant,Uploader
 from util.environment import Environment
 from util.pipelineRunner import PipelineRunner
 
-CONFIG_FILE = "../config"
+CONFIG_FILE = os.path.join(os.getcwd(),"../config")
 
 def printUsage():
     readme = open("../README","r")

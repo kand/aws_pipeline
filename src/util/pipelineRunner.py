@@ -16,7 +16,11 @@ class PipelineRunner(object):
         sys.path.append(self.path)
         return __import__(self.name)
     
-    #TODO : start point isn't working
+    
+    # TODO : there is no way to set start point to something other than the start
+    #    and inject results from a previous stage. For example, if pipeline crashed
+    #    in stage 2, still would have stage 1 results, but can't give these results
+    #    to stage 2 and start from there
     def runPipeline(self,startPoint=0,addArgs=[]):
         '''Run the pipeline. Returns True if pipeline completed successfully.'''
         module = self.loadPipeline()

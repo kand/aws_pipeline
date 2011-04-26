@@ -37,7 +37,7 @@ class BasePipeline(object):
         self.uploader = None    # file uploader
         self.bucketName = ""    # name of s3 bucket
         self.accessGrants = []  # access grant list for output
-        self.metadata = {}
+        self.metadata = {}      # metadata to associate with stuff written to s3
     
     def construct(self):
         '''Construct pipeline parameters based on set variables. Called before
@@ -85,7 +85,7 @@ class BasePipeline(object):
                 commStr = command exactly as you would enter it from 
                     command line
                 handleOutFunc = function to be called to handle any output from
-                    process, this function must take 2 inputs (outstring,errorstring)'''           
+                    process, this function must take 2 inputs (outstring,errorstring)'''     
         command = commStr.split(" ")
         process = subprocess.Popen(command,stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
@@ -93,6 +93,8 @@ class BasePipeline(object):
         
         if handleOutFunc is not None:
             handleOutFunc(pout,perr)
+        else:
+            self.handleOutput(pout,perr)
         
         self.logFile.write(perr)
         self.logFile.write(pout)

@@ -5,8 +5,6 @@ from pipelines.basePipeline import RunOrderFunction,BasePipeline
 
 class test_save_state(BasePipeline):
     
-    # TODO : change start ami
-    # TODO : needs arguments here
     def __init__(self,addArgs=[]):
         BasePipeline.__init__(self)
         
