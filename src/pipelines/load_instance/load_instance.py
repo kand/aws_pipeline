@@ -82,6 +82,7 @@ class load_instance(BasePipeline):
         '''Run pipeline'''
         pass
     
+    # TODO : need a maximum number of retries
     def _port_open(self,host,port):
         sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         i = 0
@@ -90,11 +91,13 @@ class load_instance(BasePipeline):
             try:
                 sock.connect((host,port))
                 sock.close()
+                print("connected")
                 return True
             except Exception as e:
-                print("Failed attempt " + str(i) + ":" + str(e))
+                print("."),
                 time.sleep(1)
                 continue
+        print("connected")
         return False
         
 if __name__ == "__main__":

@@ -4,7 +4,8 @@ from util.uploader import AccessGrant,Uploader
 from util.environment import Environment
 from util.pipelineRunner import PipelineRunner
 
-CONFIG_FILE = os.path.join(os.getcwd(),"../config")
+CONFIG_FILE = os.path.join(os.path.split(os.path.abspath(__file__))[0],
+                           "../config")
 
 def printUsage():
     readme = open("../README","r")
