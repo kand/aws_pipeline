@@ -1,0 +1,6 @@
+#! /usr/bin/python2.7
+
+import sys
+import pipeline.pipeline
+
+pipeline.pipeline.start(sys.argv)

@@ -20,7 +20,7 @@ class _Environment(object):
             
     def set(self,name,value):
         '''Set the value of an environment variable.'''
-        if name not in self.vars:
+        if name not in self.vars.keys():
             return False
         self.vars[name] = value
         return True
