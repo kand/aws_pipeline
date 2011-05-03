@@ -1,5 +1,7 @@
 import sys,os
 
+from pipeline.util.ec2 import ec2
+
 class PipelineRunner(object):
     
     def __init__(self,path):

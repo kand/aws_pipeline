@@ -12,7 +12,7 @@ class _Environment(object):
         self.configFile = fileName
         
         f = open(fileName,"r")
-        matches = re.finditer(r"(?P<key>\w+)=(?P<val>.+)\n?",f.read())
+        matches = re.finditer(r"(?P<key>\w+)=(?P<val>.*)\n?",f.read())
         f.close()
         
         for m in matches:

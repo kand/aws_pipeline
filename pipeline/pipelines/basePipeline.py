@@ -1,10 +1,10 @@
 import subprocess,os
 
-from util.environment import Environment
-from util.uploader import AccessGrant,Uploader
+from pipeline.util.environment import Environment
+from pipeline.util.uploader import AccessGrant,Uploader
 
 class RunOrderFunction():
-    '''A funciton to put into RUN_ORDER collection.'''
+    '''A function to put into RUN_ORDER collection.'''
     
     def __init__(self,func,*args,**kwargs):
         '''Initialize function
