@@ -1,56 +1,75 @@
-import sys
+# main entry point for program
 
-from pipelines.pipelineRunner import PipelineRunner
-from util.uploader import AccessGrant,Uploader
+import sys,argparse
+
+from util.pipelineRunner import PipelineRunner
 from util.environment import Environment
 from util.misc import getDir,getPath
 
 THIS_DIR = getDir(__file__)
-CONFIG_FILE = getPath(__file__,"config")
-USAGE_FILE = getPath(__file__,"usage")
-
-def printUsage():
-    readme = open(USAGE_FILE,"r")
-    print(readme.read())
-    readme.close()
+CONFIG_FILE = getPath(__file__,'config')
+USAGE_FILE = getPath(__file__,'usage')
 
 def start(sys_args):
     '''Start pipeline with sys_args'''
     env = Environment()
     env.load(CONFIG_FILE)
-    arglen = len(sys_args)
-    if arglen < 2:
-        printUsage()
-        
-    elif sys_args[1] == "set" and arglen == 4:
-        if not env.set(sys_args[2],sys_args[3]):
-            print("variable '" + sys_args[2] + "' not found")
-        else:
-            print("variable '" + sys_args[2] + "' set to '" + sys_args[3] + "'")
-            
-    elif sys_args[1] == "get" and arglen == 3:
-        val = env.get(sys_args[2])
-        if val is None:
-            print("variable '" + sys_args[2] + "' not found")
-        else:
-            print("'" + sys_args[2] + "' = '" + val + "'")
-            
-    elif sys_args[1] == "run" and arglen >= 3:
-        print("Running pipeline...")
-        print("")
-        pipe = PipelineRunner(sys_args[2])
-        addArgs = []
-        if arglen >= 5 and sys_args[3] == "-s":
-            for i in range(5,len(sys_args)):
-                addArgs.append(sys_args[i])
-            pipe.runPipeline(int(sys_args[4]),addArgs=addArgs)
-        else:
-            for i in range(3,len(sys_args)):
-                addArgs.append(sys_args[i])
-            pipe.runPipeline(addArgs=addArgs)
-        print("Pipeline complete.")
-    else:
-        printUsage()
+    
+    # TODO : this parser needs a lot of work
+    
+    parent_parser = argparse.ArgumentParser(prog="vertex_pipeline",
+                                            description='commands to manipulate vertex pipelines',
+                                            add_help=True)
+    sub_parsers = parent_parser.add_subparsers(dest='subparser_name')
+    
+    run_parser = sub_parsers.add_parser('run',
+                                        description='run a pipeline script',
+                                        add_help=True)
+    run_parser.add_argument('-e','--use_ec2',action='store_true',
+                            help='use this option to run pipeline on an ec2 instance')
+    run_parser.add_argument('-s','--start_at',metavar=('s','p'),nargs=2,
+                            help='set a start point (s) to begin running pipeline at, using result in path (p) from previous point in the pipeline')
+    run_parser.add_argument('path',
+                            help='path to pipeline to run')
+    run_parser.add_argument('pipeline_argument',nargs='*',
+                            help='argument to pass to the pipeline')
+    
+    set_parser = sub_parsers.add_parser('set',
+                                        description='set an environment variable',
+                                        add_help=True)
+    set_parser.add_argument('name',
+                            help='environment variable to set')
+    set_parser.add_argument('value',
+                            help='value to set for environment variable')
+    
+    get_parser = sub_parsers.add_parser('get',
+                                        description='get an environment variable',
+                                        add_help=True)
+    get_parser.add_argument('name',
+                            help='environment variable to set')
+    get_parser.add_argument('value',
+                            help='value to set for environment variable')
+    
+    vals = vars(parent_parser.parse_args([sys_args[i] for i in range(1,len(sys_args))]))
+    
+    if vals['subparser_name'] == 'run':
+        #run command
+        pass
+    elif vals['subparser_name'] == 'set':
+        #set command
+        pass
+    elif vals['subparser_name'] == 'get':
+        #get command
+        pass
+    
+    # TODO : remove all this stuff
+        #env.set(sys_args[2],sys_args[3]):
+        #val = env.get(sys_args[2])
+            #pipe = PipelineRunner(sys_args[2],False)
+            #pipe = PipelineRunner(sys_args[2])
+            #pipe.runPipeline(int(sys_args[4]),addArgs=addArgs)
+            #pipe.runPipeline(addArgs=addArgs)
+
     env.save()
 
 if __name__ == "__main__":

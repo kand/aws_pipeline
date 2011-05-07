@@ -1,7 +1,6 @@
 import subprocess,os
 
-from pipeline.util.environment import Environment
-from pipeline.util.uploader import AccessGrant,Uploader
+from util.environment import Environment
 
 class RunOrderFunction():
     '''A function to put into RUN_ORDER collection.'''
@@ -33,11 +32,13 @@ class BasePipeline(object):
         self.env = Environment()# environment variables
         self.name = ""          # name of pipeline
         self.result = None      # stores result from last RUN_ORDER function call
-        
-        self.uploader = None    # file uploader
-        self.bucketName = ""    # name of s3 bucket
-        self.accessGrants = []  # access grant list for output
-        self.metadata = {}      # metadata to associate with stuff written to s3
+    
+    def handleOutput(self,pout,perr):
+        '''Overridable function to handle shell script output.
+            Inputs:
+                pout = proccess out stream
+                perr = process error stream'''
+        pass
     
     def construct(self):
         '''Construct pipeline parameters based on set variables. Called before
@@ -48,9 +49,6 @@ class BasePipeline(object):
             
         self.logPath = os.path.join(self.outputDir,self.name + "_log")
         self.logFile = open(self.logPath,"w")
-        
-        self.uploader = Uploader(self.env.get("ACCESS_KEY"),self.env.get("SECRET_KEY"))
-        self.bucketName = self.name + "_results"
     
     def run(self,startPoint=0):
         '''Run RUN_ORDER functions from startPoint.'''
@@ -64,20 +62,9 @@ class BasePipeline(object):
             f = open(path,"w")
             f.write(str(self.result))
             f.close()
-            
-            self.save(path)
         
         print("log at:'" + self.logPath + "'")
         self.logFile.close()
-        
-        self.save(self.logPath)
-    
-    def handleOutput(self,pout,perr):
-        '''Overriadable function to handle shell script output.
-            Inputs:
-                pout = proccess out stream
-                perr = process error stream'''
-        pass
     
     def execComm(self,commStr,handleOutFunc=None):
         '''Run a command line command and log its output to self.log
@@ -107,12 +94,6 @@ class BasePipeline(object):
         
         self.execComm("chmod +x %s" % script)    
         self.execComm("sudo %s %s" % (script," ".join(str(a) for a in args)),self.handleOutput)
-        
-    def save(self,path):
-        '''Saves file to s3.'''
-        print("File at: " + 
-              self.uploader.upload(path,self.bucketName,os.path.split(path)[1],
-                                   self.accessGrants,self.metadata))
 
 if __name__ == "__main__":
     pass

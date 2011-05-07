@@ -15,8 +15,8 @@ class AccessGrant():
         self.email = email
         self.access = access
 
-class Uploader(object):
-    '''Take a file at url and put it in an aws s3 bucket'''
+class S3(object):
+    '''File upload utilities for use with AWS s3'''
     
     def __init__(self,access,secret):
         self.__access_key = access
@@ -97,7 +97,7 @@ class Uploader(object):
             raise Exception("key '" + keyName + "' does not exist")
         return k
     
-    # TODO : this doesn't work...
+    # TODO : Function broken, see inner TODO comment
     def setMetadata(self,key,metadata={}):
         '''Set metadata for a key.
             
@@ -124,14 +124,11 @@ class Uploader(object):
         if isinstance(accessGrants,list):
             if len(accessGrants) == 0:
                 key.set_acl('public-read')
-                #print("File set to be publicly read")
             else:
                 for g in accessGrants:
                     key.add_email_grant(g.access,g.email)
-                    #print("user '" + g.email + "' granted permission '" + g.access + "'")
         else:
             key.set_acl('private')
-            #print("File set to private")
         return key
     
     def parseUrl(self,url):

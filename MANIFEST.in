@@ -1,3 +1,0 @@
-include vertex_pipeline README
-recursive-include pipeline/util *
-recursive-include pipeline/pipelines *

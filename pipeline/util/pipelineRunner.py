@@ -1,17 +1,21 @@
 import sys,os
 
-from pipeline.util.ec2 import ec2
+from aws_tools.ec2 import ec2
+from util.environment import Environment
 
 class PipelineRunner(object):
     
-    def __init__(self,path):
+    def __init__(self,path,onEc2=True):
         '''Handles running pipelines. Pipeline classes must have the same file
             and class name.
             Inputs: 
-                path = path to python pipeline script'''
+                path = path to python pipeline script
+                onEc2 = run on an ec2Instance'''
         psplit = os.path.split(path)
         self.path = psplit[0]
         self.name = psplit[1].replace(".py","")
+        
+        self.onEc2 = onEc2
     
     def loadPipeline(self):
         '''Load the pipeline'''

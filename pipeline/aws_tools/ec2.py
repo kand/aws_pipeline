@@ -1,9 +1,9 @@
-import sys,os,socket,time
+import socket,time
 
 from boto.ec2.connection import EC2Connection
-from fabric.api import run,sudo,settings,env
+from fabric.api import sudo,settings,local
 
-from pipeline.util.environment import Environment
+from util.environment import Environment
 
 VALID_IMGS = {"basicLinuxx32":{"imageid":"ami-76f0061f",
                               "supported_instances":["t1.micro","m1.small","c1.medium"],
@@ -15,15 +15,22 @@ SECURITY_GROUPS = {"vertex":{"ssh":[22,22,"0.0.0.0/0"],
 class ec2(object):
     '''Methods to use aws ec2 instances'''
     
-    def __init__(self,aws_access_key=Environment().get("ACCESS_KEY"),
-                 aws_secret_key=Environment().get("SECRET_KEY"),region=None):
+    def __init__(self,aws_access_key=None,aws_secret_key=None,region=None):
         '''Default constructor.
         
             Inputs:  
                 aws_access_key = access key provided by aws
                 aws_secret_key = secret key associated with access key'''
-        self.__access_key = aws_access_key
-        self.__secret_key = aws_secret_key
+        if aws_access_key is None:
+            self.__access_key = Environment().get("ACCESS_KEY")
+        else:
+            self.__access_key = aws_access_key
+        
+        if aws_secret_key is None:
+            self.__secret_key = Environment().get("SECRET_KEY")
+        else:
+            self.__secret_key = aws_secret_key
+            
         self.__region = region
         self.__conn = EC2Connection(aws_access_key_id = self.__access_key, 
                                     aws_secret_access_key = self.__secret_key)
@@ -65,32 +72,43 @@ class ec2(object):
         return instance.dns_name
     
     # TODO : might want to have a full list of installable software somewhere
-    def prepareInstance(self,dnsName,keyPairName,softwareList):
+    def prepareAndRunInstance(self,dnsName,keyPairAbsPath,localPipeDir,scriptName,softwareList,addArgs):
         '''Set up instance software.
         
             Inputs:
                 dnsName = dns name of server
                 keyPairAbsPath = keyPairName used with startInstance
+                localPipeDir = absolute path to directory containing local 
+                    pipeline and associated files
+                scriptName = name of pipeline to run
                 softwareList = a list of software to install, must be accessible
                     by yum on an ec2 instance. Best tested by running an ec2
                     instance and trying yum search or yum list all
+                addArgs = arguments for pipeline
             
             Returns:
-                True if instance is set up properly'''
+                True if instance is set up and run properly'''
         
         with settings(host_string="ec2-user@%s" % dnsName,
-                      key_filename="/home/kos/.ssh/%s.pem" % keyPairName,
+                      key_filename="/home/kos/.ssh/%s.pem" % keyPairAbsPath,
                       warn_only=True):
             if not self._port_open(dnsName,22):
                 print("FATAL: counld not connect to ec2 instance. Try increasing number of retries?")
                 return False
             
             # TODO : might want to have the dist package somewhere online to just download
-            sudo("wget https://github.com/kand/aws_pipeline/blob/master/dist/vertex_pipeline-1.0.tar.gz?raw=true --no-check-certificate")
-            sudo("tar xvf vertex_pipeline-1.0.tar.gz")
+            sudo("yum install -y git")
+            sudo("git clone git://github.com/kand/aws_pipeline.git")
+            sudo("chmod +x aws_pipeline/vertex_pipeline")
             
             for s in softwareList:
                 sudo("yum install -y %s" % s)
+            
+            local("scp -i %s -r %s ec2-user@%s:/home/ec2-user/aws_pipeline/"
+                  % (keyPairAbsPath,localPipeDir,dnsName))
+            
+            sudo("aws_pipeline/vertex_pipeline run aws_pipeline/%s.py %s"
+                 % (scriptName,addArgs.join(",")))
             
             return True
     
@@ -126,7 +144,7 @@ class ec2(object):
     #    self.__conn.close()'''
     #    pass
     
-    def _port_open(self,host,port,retries=Environment().get("MAX_SSH_RETRIES")):
+    def _port_open(self,host,port,retries=None):
         '''Test if a port is open on host.
             
             Inputs:
@@ -136,6 +154,10 @@ class ec2(object):
                 
             Returns:
                 True if connected, False if failed'''
+        
+        if retries is None:
+            retries = int(Environment().get("MAX_SSH_RETRIES"))
+        
         sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         print("attempting to connect")
         for i in range(0,retries):
@@ -144,7 +166,7 @@ class ec2(object):
                 sock.close()
                 print("connected")
                 return True
-            except Exception as e:
+            except Exception:
                 print("."),
                 time.sleep(1)
                 continue
