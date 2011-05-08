@@ -1,0 +1,4 @@
+#! /bin/bash
+
+echo "Here are the files in this folder: ";
+ls;

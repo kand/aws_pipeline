@@ -1,27 +1,12 @@
-import subprocess,os
+import subprocess,sys,os,argparse
 
 from util.environment import Environment
 
-class RunOrderFunction():
-    '''A function to put into RUN_ORDER collection.'''
-    
-    def __init__(self,func,*args,**kwargs):
-        '''Initialize function
-            Inputs:
-                func = function in pipeline to run
-                args = arguments to func
-                kwargs = keyword arguments to func'''
-
-        self.func = func
-        self.args = args
-        self.kwargs = kwargs
-        
-    def __call__(self):
-        '''Calls function with given arguments and keyword arguments.'''
-        return self.func(*self.args,**self.kwargs)
-
 class BasePipeline(object):
     '''Base for all other python pipeline scripts.'''
+    
+    
+    # TODO : base pipeline stuff off of self.name istead of name of class
     
     def __init__(self,addArgs=[]):
         self.RUN_ORDER = []     # ordered list of functions to run
@@ -31,6 +16,8 @@ class BasePipeline(object):
         self.logFile = None     # log file object
         self.env = Environment()# environment variables
         self.name = ""          # name of pipeline
+        self.desc = ""          # description of pipeline
+        
         self.result = None      # stores result from last RUN_ORDER function call
     
     def handleOutput(self,pout,perr):
@@ -50,12 +37,18 @@ class BasePipeline(object):
         self.logPath = os.path.join(self.outputDir,self.name + "_log")
         self.logFile = open(self.logPath,"w")
     
-    def run(self,startPoint=0):
-        '''Run RUN_ORDER functions from startPoint.'''
+    def run(self,startPoint=0,prev_result=None):
+        '''Run RUN_ORDER functions from startPoint.
+            Inputs:
+                startPoint = stage to start at
+                prev_result = result from previous stage to pass to start stage'''
         self.construct()
         
         for i in range(startPoint,len(self.RUN_ORDER)):
-            self.result = self.RUN_ORDER[i]()
+            if i == startPoint and prev_result is not None:
+                self.result = self.RUN_ORDER[i](prev_result)
+            else:
+                self.result = self.RUN_ORDER[i](self.result)
             
             path = os.path.join(self.outputDir,self.name + "_results_" + str(i))
             
@@ -65,6 +58,21 @@ class BasePipeline(object):
         
         print("log at:'" + self.logPath + "'")
         self.logFile.close()
+        
+    def runFromCommandLine(self):
+        '''This should be placed at the footer of the pipeline after an if 
+            __name__ == "__main__" so that the pipeline can be called from 
+            the command line'''
+        parser = argparse.ArgumentParser(prog=self.name,
+                                         description=self.desc)
+        parser.add_argument('-s','--start_at',metavar=('s'),type=int,
+                            choices=range(0,len(self.RUN_ORDER)),
+                            help='set a start point (s) to begin running pipeline at')
+        parser.add_argument('pipeline_argument',nargs='*',
+                            help='argument to pass to pipeline')
+        
+        vals = vars(parser.parse_args([sys.argv[i] for i in range(1,len(sys.argv))]))
+        self.run(vals['start_at'],vals['pipeline_argument'])
     
     def execComm(self,commStr,handleOutFunc=None):
         '''Run a command line command and log its output to self.log
