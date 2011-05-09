@@ -5,10 +5,7 @@ from util.environment import Environment
 class BasePipeline(object):
     '''Base for all other python pipeline scripts.'''
     
-    
-    # TODO : base pipeline stuff off of self.name istead of name of class
-    
-    def __init__(self,addArgs=[]):
+    def __init__(self):
         self.RUN_ORDER = []     # ordered list of functions to run
         
         self.outputDir = ""     # pipeline output directory

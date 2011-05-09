@@ -1,12 +1,19 @@
-import socket,time
+import socket,time,os
 
 from boto.ec2.connection import EC2Connection
 from fabric.api import sudo,settings,local
 
 from util.environment import Environment
 
+class INSTANCE_SIZES():
+    T1MICRO = "t1.micro"
+    M1SMALL = "m1.small"
+    C1MEDIUM = "c1.medium"
+    
 VALID_IMGS = {"basicLinuxx32":{"imageid":"ami-76f0061f",
-                              "supported_instances":["t1.micro","m1.small","c1.medium"],
+                              "supported_instances":[INSTANCE_SIZES.C1MEDIUM,
+                                                     INSTANCE_SIZES.M1SMALL,
+                                                     INSTANCE_SIZES.T1MICRO],
                               "username":"root"}}
 
 SECURITY_GROUPS = {"vertex":{"ssh":[22,22,"0.0.0.0/0"],
@@ -15,6 +22,7 @@ SECURITY_GROUPS = {"vertex":{"ssh":[22,22,"0.0.0.0/0"],
 class ec2(object):
     '''Methods to use aws ec2 instances'''
     
+    # TODO : setting region doesn't actually do anything yet
     def __init__(self,aws_access_key=None,aws_secret_key=None,region=None):
         '''Default constructor.
         
@@ -43,6 +51,7 @@ class ec2(object):
     def getRunningInstances(self):
         return self.__runningInstances
 
+    # TODO : need some validation here on inputs
     def startInstance(self,name,imageName,instanceType,keyPairName):
         '''Start up a new ec2 instance.
         
@@ -72,25 +81,27 @@ class ec2(object):
         return instance.dns_name
     
     # TODO : might want to have a full list of installable software somewhere
-    def prepareAndRunInstance(self,dnsName,keyPairAbsPath,localPipeDir,scriptName,softwareList,addArgs):
+    def prepareAndRunInstance(self,dnsName,keyPairName,localPipeDir,scriptName,softwareList,pipeArgs):
         '''Set up instance software.
         
             Inputs:
                 dnsName = dns name of server
-                keyPairAbsPath = keyPairName used with startInstance
+                keyPairName = name of key used to start instance
                 localPipeDir = absolute path to directory containing local 
                     pipeline and associated files
                 scriptName = name of pipeline to run
                 softwareList = a list of software to install, must be accessible
                     by yum on an ec2 instance. Best tested by running an ec2
                     instance and trying yum search or yum list all
-                addArgs = arguments for pipeline
+                pipeArgs = string to pass to pipeline as arguments
             
             Returns:
                 True if instance is set up and run properly'''
         
+        keyPairAbsPath = os.path.join(os.getenv("HOME"),".ssh/%s.pem" % keyPairName)
+        
         with settings(host_string="ec2-user@%s" % dnsName,
-                      key_filename="/home/kos/.ssh/%s.pem" % keyPairAbsPath,
+                      key_filename=keyPairAbsPath,
                       warn_only=True):
             if not self._port_open(dnsName,22):
                 print("FATAL: counld not connect to ec2 instance. Try increasing number of retries?")
@@ -98,6 +109,10 @@ class ec2(object):
             
             # TODO : might want to have the dist package somewhere online to just download
             sudo("yum install -y git")
+            
+            # TODO : need to install boto and fabric here
+            sudo("yum install -y python-boto.noarch")
+            
             sudo("git clone git://github.com/kand/aws_pipeline.git")
             sudo("chmod +x aws_pipeline/vertex_pipeline")
             
@@ -107,8 +122,8 @@ class ec2(object):
             local("scp -i %s -r %s ec2-user@%s:/home/ec2-user/aws_pipeline/"
                   % (keyPairAbsPath,localPipeDir,dnsName))
             
-            sudo("aws_pipeline/vertex_pipeline run aws_pipeline/%s.py %s"
-                 % (scriptName,addArgs.join(",")))
+            sudo("aws_pipeline/vertex_pipeline run aws_pipeline/%s.py %s "
+                 % (scriptName,pipeArgs))
             
             return True
     

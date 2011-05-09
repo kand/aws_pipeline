@@ -1,36 +1,56 @@
 import sys,os
 
-from aws_tools.ec2 import ec2
+from aws_tools.ec2 import ec2,VALID_IMGS,INSTANCE_SIZES
 from util.environment import Environment
 
 class PipelineRunner(object):
     
-    def __init__(self,path,onEc2=True):
+    def __init__(self,path):
         '''Handles running pipelines. Pipeline classes must have the same file
             and class name.
             Inputs: 
-                path = path to python pipeline script
-                onEc2 = run on an ec2Instance'''
+                path = path to python pipeline script'''
         psplit = os.path.split(path)
         self.path = psplit[0]
         self.name = psplit[1].replace(".py","")
-        
-        self.onEc2 = onEc2
     
     def loadPipeline(self):
         '''Load the pipeline'''
         sys.path.append(self.path)
         return __import__(self.name)
     
-    # TODO : there is no way to set start point to something other than the start
-    #    and inject results from a previous stage. For example, if pipeline crashed
-    #    in stage 2, still would have stage 1 results, but can't give these results
-    #    to stage 2 and start from there
-    def runPipeline(self,startPoint=0,addArgs=[]):
-        '''Run the pipeline. Returns True if pipeline completed successfully.'''
+    def runPipeline(self,startPoint=0,pipeline_args=None):
+        '''Run the set pipeline
+            Inputs:
+                startPoint = stage to start pipeline at
+                pipeline_args = string to pass to pipeline as arguments'''
         module = self.loadPipeline()
-        pipeline = module.__getattribute__(self.name)(addArgs)
-        return pipeline.run(startPoint)
+        pipeline = module.__getattribute__(self.name)()
+        return pipeline.run(startPoint,pipeline_args)
     
+    # TODO : need to test this
+    def runPipelineOnEc2(self,keyPairName,size=INSTANCE_SIZES.T1MICRO,
+                         startPoint=0,pipeline_args=None):
+        '''Run the set pipeline on ec2
+            Inputs:
+                keyPairName = 
+                size = size of instance, taken from ec2.INSTANCES_SIZES
+                startPoint = stage to start pipeline at
+                pipeline_args = string to pass to pipeline as arguments'''
+        inst_name = "pipeline"
+        
+        ec2conn = ec2()
+        dns_name = ec2conn.startInstance(inst_name,VALID_IMGS['baxicLinuxx32'],
+                                        size, keyPairName)
+        prepared = ec2conn.prepareAndRunInstance(dns_name,keyPairName,
+                                                self.path,self.name,
+                                                pipeArgs=pipeline_args)
+        
+        if not prepared:
+            print("Error: Instance didn't prepare properly, shutting it down")
+            ec2conn.stopInstance(inst_name)
+            return False
+        return True
+
 if __name__ == "__main__":
     pass
