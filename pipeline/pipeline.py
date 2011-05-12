@@ -43,29 +43,30 @@ def start(sys_args):
                                         description='get an environment variable')
     get_parser.add_argument('name',
                             help='environment variable to set')
-    get_parser.add_argument('value',
-                            help='value to set for environment variable')
     
+    showAll_parser = sub_parsers.add_parser('showAll',
+                                            description='show all environment variables and their values')
+
     vals = vars(parent_parser.parse_args([sys_args[i] for i in range(1,len(sys_args))]))
     
-    # TODO : finish this parser
+    # TODO : need to test, not using start_at yet
     if vals['subparser_name'] == 'run':
-        #run command
-        pass
+        runner = PipelineRunner(vals['path'])
+        if vals['use_ec2']:
+            runner.runPipelineOnEc2()
+        else:
+            runner.runPipeline()
+        
     elif vals['subparser_name'] == 'set':
-        #set command
-        pass
-    elif vals['subparser_name'] == 'get':
-        #get command
-        pass
+        env.set(vals['name'],vals['value'])
     
-    # TODO : remove all this stuff
-        #env.set(sys_args[2],sys_args[3]):
-        #val = env.get(sys_args[2])
-            #pipe = PipelineRunner(sys_args[2],False)
-            #pipe = PipelineRunner(sys_args[2])
-            #pipe.runPipeline(int(sys_args[4]),addArgs=addArgs)
-            #pipe.runPipeline(addArgs=addArgs)
+    elif vals['subparser_name'] == 'get':
+        val = env.get(vals['name'])
+        if val is not None:
+            print(val)
+            
+    elif vals['subparser_name'] == 'showAll':
+        env.showAll()
 
     env.save()
 

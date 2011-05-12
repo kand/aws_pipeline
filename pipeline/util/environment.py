@@ -43,8 +43,20 @@ class _Environment(object):
         '''Get the value of an environment variable.'''
         if not self.loaded:
             raise Exception('Environment must be loaded before calling get')
+        
+        if name not in self.vars.keys():
+            print('Error: name provided does not exist in the environment')
+            return None
             
         return self.vars[name]
+    
+    def showAll(self):
+        '''Display all environment vairables.'''
+        if not self.loaded:
+            raise Exception('Environment must be loaded before calling showAll')
+    
+        for k in self.vars.keys():
+            print('%s \t %s' % (k,self.vars[k]))
     
     def save(self):
         '''Save environment variables to config file.'''

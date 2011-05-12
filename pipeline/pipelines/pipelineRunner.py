@@ -1,7 +1,6 @@
 import sys,os
 
 from aws_tools.ec2 import ec2,VALID_IMGS,INSTANCE_SIZES
-from util.environment import Environment
 
 class PipelineRunner(object):
     
@@ -28,22 +27,19 @@ class PipelineRunner(object):
         pipeline = module.__getattribute__(self.name)()
         return pipeline.run(startPoint,pipeline_args)
     
-    # TODO : need to test this
-    def runPipelineOnEc2(self,keyPairName,size=INSTANCE_SIZES.T1MICRO,
+    def runPipelineOnEc2(self,size=INSTANCE_SIZES.T1MICRO,
                          startPoint=0,pipeline_args=None):
         '''Run the set pipeline on ec2
             Inputs:
-                keyPairName = 
                 size = size of instance, taken from ec2.INSTANCES_SIZES
                 startPoint = stage to start pipeline at
                 pipeline_args = string to pass to pipeline as arguments'''
+        
         inst_name = "pipeline"
         
         ec2conn = ec2()
-        dns_name = ec2conn.startInstance(inst_name,VALID_IMGS['baxicLinuxx32'],
-                                        size, keyPairName)
-        prepared = ec2conn.prepareAndRunInstance(dns_name,keyPairName,
-                                                self.path,self.name,
+        dns_name = ec2conn.startInstance(inst_name,VALID_IMGS['baxicLinuxx32'],size)
+        prepared = ec2conn.prepareAndRunInstance(dns_name,self.path,self.name,
                                                 pipeArgs=pipeline_args)
         
         if not prepared:

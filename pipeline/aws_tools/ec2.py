@@ -52,7 +52,7 @@ class ec2(object):
         return self.__runningInstances
 
     # TODO : need some validation here on inputs
-    def startInstance(self,name,imageName,instanceType,keyPairName):
+    def startInstance(self,name,imageName,instanceType,keyPairName=None):
         '''Start up a new ec2 instance.
         
             Inputs:
@@ -66,6 +66,9 @@ class ec2(object):
         
         if instanceType not in VALID_IMGS[imageName]["supported_instances"]:
             raise Exception("'" + instanceType + "' is not a valid type for '" + VALID_IMGS[imageName]["ami-76f0061f"] + "'")        
+
+        if keyPairName is None:
+            keyPairName = Environment().get("KEY_PAIR")
 
         image = self.__conn.get_image(VALID_IMGS[imageName]["imageid"])
                 
@@ -81,12 +84,11 @@ class ec2(object):
         return instance.dns_name
     
     # TODO : might want to have a full list of installable software somewhere
-    def prepareAndRunInstance(self,dnsName,keyPairName,localPipeDir,scriptName,softwareList,pipeArgs):
+    def prepareAndRunInstance(self,dnsName,localPipeDir,scriptName,softwareList,pipeArgs,keyPairName=None):
         '''Set up instance software.
         
             Inputs:
                 dnsName = dns name of server
-                keyPairName = name of key used to start instance
                 localPipeDir = absolute path to directory containing local 
                     pipeline and associated files
                 scriptName = name of pipeline to run
@@ -94,9 +96,13 @@ class ec2(object):
                     by yum on an ec2 instance. Best tested by running an ec2
                     instance and trying yum search or yum list all
                 pipeArgs = string to pass to pipeline as arguments
+                keyPairName = name of key used to start instance
             
             Returns:
                 True if instance is set up and run properly'''
+        
+        if keyPairName is None:
+            keyPairName = Environment().get("KEY_PAIR")
         
         keyPairAbsPath = os.path.join(os.getenv("HOME"),".ssh/%s.pem" % keyPairName)
         
