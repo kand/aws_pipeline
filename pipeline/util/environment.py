@@ -2,17 +2,21 @@ import re
 
 from util.misc import getPath
 
+CONFIG_FILE = getPath(__file__,'../config')
+
 class _Environment(object):
     '''Class that stores/loads/saves environment variables in the config file.'''
     
     def __init__(self):
         self.vars = {}
         self.loaded = False
+        self.load()
         
-    def load(self,fileName):
+    def load(self,fileName=CONFIG_FILE):
         '''Load environment variables from specified config file.'''
         
         self.configFile = fileName
+        self.vars = {}
         
         f = open(fileName,"r")
         matches = re.finditer(r"(?P<key>\w+)=(?P<val>.*)\n?",f.read())

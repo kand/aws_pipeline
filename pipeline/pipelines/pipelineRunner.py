@@ -38,7 +38,9 @@ class PipelineRunner(object):
         inst_name = "pipeline"
         
         ec2conn = ec2()
-        dns_name = ec2conn.startInstance(inst_name,VALID_IMGS['baxicLinuxx32'],size)
+        print('starting pipeline...')
+        dns_name = ec2conn.startInstance(inst_name,'basicLinuxx32',size)
+        print('setting up and running pipeline...')
         prepared = ec2conn.prepareAndRunInstance(dns_name,self.path,self.name,
                                                 pipeArgs=pipeline_args)
         

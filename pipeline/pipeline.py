@@ -6,14 +6,9 @@ from pipelines.pipelineRunner import PipelineRunner
 from util.environment import Environment
 from util.misc import getDir,getPath
 
-THIS_DIR = getDir(__file__)
-CONFIG_FILE = getPath(__file__,'config')
-USAGE_FILE = getPath(__file__,'usage')
-
 def start(sys_args):
     '''Start pipeline with sys_args'''
     env = Environment()
-    env.load(CONFIG_FILE)
     
     # TODO : this parser needs a lot of work
     

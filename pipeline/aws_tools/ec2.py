@@ -1,7 +1,7 @@
 import socket,time,os
 
 from boto.ec2.connection import EC2Connection
-from fabric.api import sudo,settings,local
+from fabric.api import sudo,settings,put
 
 from util.environment import Environment
 
@@ -29,13 +29,15 @@ class ec2(object):
             Inputs:  
                 aws_access_key = access key provided by aws
                 aws_secret_key = secret key associated with access key'''
+        self.env = Environment()
+        
         if aws_access_key is None:
-            self.__access_key = Environment().get("ACCESS_KEY")
+            self.__access_key = self.env.get("ACCESS_KEY")
         else:
             self.__access_key = aws_access_key
         
         if aws_secret_key is None:
-            self.__secret_key = Environment().get("SECRET_KEY")
+            self.__secret_key = self.env.get("SECRET_KEY")
         else:
             self.__secret_key = aws_secret_key
             
@@ -63,12 +65,11 @@ class ec2(object):
                 keyPairName = key pair to associate with this image
             Returns: 
                 dns to server if server successfully starts up'''
-        
         if instanceType not in VALID_IMGS[imageName]["supported_instances"]:
             raise Exception("'" + instanceType + "' is not a valid type for '" + VALID_IMGS[imageName]["ami-76f0061f"] + "'")        
 
         if keyPairName is None:
-            keyPairName = Environment().get("KEY_PAIR")
+            keyPairName = self.env.get("KEY_PAIR")
 
         image = self.__conn.get_image(VALID_IMGS[imageName]["imageid"])
                 
@@ -84,7 +85,8 @@ class ec2(object):
         return instance.dns_name
     
     # TODO : might want to have a full list of installable software somewhere
-    def prepareAndRunInstance(self,dnsName,localPipeDir,scriptName,softwareList,pipeArgs,keyPairName=None):
+    def prepareAndRunInstance(self,dnsName,localPipeDir,scriptName,softwareList=[],pipeArgs=None,
+                              keyPairName=None):
         '''Set up instance software.
         
             Inputs:
@@ -102,7 +104,7 @@ class ec2(object):
                 True if instance is set up and run properly'''
         
         if keyPairName is None:
-            keyPairName = Environment().get("KEY_PAIR")
+            keyPairName = self.env.get("KEY_PAIR")
         
         keyPairAbsPath = os.path.join(os.getenv("HOME"),".ssh/%s.pem" % keyPairName)
         
@@ -116,20 +118,25 @@ class ec2(object):
             # TODO : might want to have the dist package somewhere online to just download
             sudo("yum install -y git")
             
-            # TODO : need to install boto and fabric here
+            # TODO : would probably be better to have an image already made with this stuff
+            
             sudo("yum install -y python-boto.noarch")
+            # TODO : need to install fabric, can't figure out how to get fabric on instance, for now...
             
             sudo("git clone git://github.com/kand/aws_pipeline.git")
             sudo("chmod +x aws_pipeline/vertex_pipeline")
             
             for s in softwareList:
                 sudo("yum install -y %s" % s)
+                
+            put(localPipeDir,'/home/ec2-user/aws_pipeline',use_sudo=True)
             
-            local("scp -i %s -r %s ec2-user@%s:/home/ec2-user/aws_pipeline/"
-                  % (keyPairAbsPath,localPipeDir,dnsName))
-            
-            sudo("aws_pipeline/vertex_pipeline run aws_pipeline/%s.py %s "
-                 % (scriptName,pipeArgs))
+            if pipeArgs is not None:
+                sudo("aws_pipeline/vertex_pipeline run aws_pipeline/%s.py %s "
+                     % (scriptName,pipeArgs))
+            else:
+                sudo("aws_pipeline/vertex_pipeline run aws_pipeline/%s.py "
+                     % (scriptName))
             
             return True
     
@@ -177,7 +184,7 @@ class ec2(object):
                 True if connected, False if failed'''
         
         if retries is None:
-            retries = int(Environment().get("MAX_SSH_RETRIES"))
+            retries = int(self.env.get("MAX_SSH_RETRIES"))
         
         sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         print("attempting to connect")
