@@ -20,7 +20,7 @@ class example_pipeline(BasePipeline):
                           self.stage2,
                           self.stage3]
         
-        self.name = "example_pipeline_name"
+        self.name = "pipeline_name"
         self.desc = "this is an example pipeline"
         
     def handleOutput(self,pout,perr):
