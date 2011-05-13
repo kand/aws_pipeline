@@ -83,6 +83,8 @@ class BasePipeline(object):
                                    stderr=subprocess.PIPE)
         pout,perr = process.communicate()
         
+        # TODO : need to flush err and out before next comm runs
+        
         if handleOutFunc is not None:
             handleOutFunc(pout,perr)
         else:
