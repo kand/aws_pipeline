@@ -6,6 +6,6 @@ import sys
 
 sys.path.append("pipeline")
 
-import pipeline
+import pipeline.pipeline
 
-pipeline.start(sys.argv)
+pipeline.pipeline.start(sys.argv)

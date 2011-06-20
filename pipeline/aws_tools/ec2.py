@@ -188,8 +188,8 @@ class ec2(object):
         
         print("attempting to connect")
         for i in range(0,retries):
-			sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)        
-    		try:
+            sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)        
+            try:
                 sock.connect((host,port))
                 sock.close()
                 print("connected")
