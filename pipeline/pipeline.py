@@ -48,9 +48,9 @@ def start(sys_args):
     if vals['subparser_name'] == 'run':
         runner = PipelineRunner(vals['path'])
         if vals['use_ec2']:
-            runner.runPipelineOnEc2(vals['pipeline_argument'])
+            runner.runPipelineOnEc2(pipeline_args=vals['pipeline_argument'])
         else:
-            runner.runPipeline(vals['pipeline_argument'])
+            runner.runPipeline(pipeline_args=vals['pipeline_argument'])
         
     elif vals['subparser_name'] == 'set':
         env.set(vals['name'],vals['value'])
