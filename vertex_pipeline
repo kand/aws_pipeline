@@ -4,6 +4,7 @@
 
 import sys
 
+sys.path.append("aws_tools/pipeline")
 sys.path.append("pipeline")
 
 import pipeline
