@@ -132,10 +132,10 @@ class ec2(object):
             put(localPipeDir,'/home/ec2-user/aws_pipeline',use_sudo=True)
             
             if pipeArgs is not None:
-                sudo("aws_pipeline/vertex_pipeline run aws_pipeline/%s/%s.py %s "
+                sudo("aws_pipeline/vertex_pipeline run aws_pipeline/%s/%s.py %s &"
                      % (scriptName,scriptName,pipeArgs))
             else:
-                sudo("aws_pipeline/vertex_pipeline run aws_pipeline/%s/%s.py "
+                sudo("aws_pipeline/vertex_pipeline run aws_pipeline/%s/%s.py &"
                      % (scriptName,scriptName))
             
             return True
