@@ -186,10 +186,10 @@ class ec2(object):
         if retries is None:
             retries = int(self.env.get("MAX_SSH_RETRIES"))
         
-        sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         print("attempting to connect")
         for i in range(0,retries):
-            try:
+			sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)        
+    		try:
                 sock.connect((host,port))
                 sock.close()
                 print("connected")
